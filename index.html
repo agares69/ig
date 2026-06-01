@@ -1,102 +1,222 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-<meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'>
-<title>Portal Eksklusif Terbatas</title>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'></script>
-<style>
-body { font-family: sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f9; color: #333; }
-.container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-#login-box { text-align: center; max-width: 420px; margin: 50px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-input[type='text'], input[type='password'] { width: 90%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
-button { background: #0275d8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; width: 95%; margin-top: 10px; }
-button:hover { background: #01549b; }
-#content { display: none; }
-#timer-info { background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 15px; font-weight: bold; }
-h1 { text-align: center; color: #444; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-h2 { color: #d9534f; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 30px; }
-ol { padding-left: 20px; }
-li { margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-left: 4px solid #d9534f; border-radius: 4px; }
-a { color: #0275d8; text-decoration: none; font-weight: bold; }
-.meta-info { font-size: 0.85em; color: #666; }
-.error { color: red; margin-top: 15px; font-weight: bold; font-size: 13px; text-align: left; background: #ffebee; padding: 10px; border-radius: 4px; display: none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Unfollow Checker - Portal Admin & Follower</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fafafa; color: #262626; padding: 20px; margin: 0; }
+        .container { max-width: 500px; margin: 30px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #dbdbdb; }
+        h2 { text-align: center; margin-bottom: 20px; color: #444; }
+        p { font-size: 14px; color: #666; line-height: 1.5; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
+        input[type="text"], input[type="password"], input[type="file"] { width: 100%; padding: 11px; border: 1px solid #dbdbdb; border-radius: 6px; box-sizing: border-box; font-size: 14px; background: #fafafa; }
+        button { width: 100%; padding: 12px; background: #0095f6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; }
+        button:hover { background: #1877f2; }
+        #login-box, #upload-box, #result-box { display: none; }
+        .error { color: #ed4956; font-size: 13px; margin-top: 5px; font-weight: bold; }
+        .status-success { color: #198754; font-size: 13px; font-weight: bold; margin-top: 5px; }
+        ol { padding-left: 20px; }
+        li { margin-bottom: 10px; padding: 8px; background: #f8f9fa; border-left: 4px solid #ed4956; border-radius: 4px; font-size: 14px; }
+        a { color: #00376b; text-decoration: none; font-weight: bold; }
+        .info-box { background: #e8f0fe; padding: 12px; border-radius: 6px; font-size: 13px; color: #1a73e8; margin-bottom: 20px; border-left: 4px solid #1a73e8; }
+        .badge-admin { background: #28a745; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 5px; display: inline-block; }
+    </style>
 </head>
 <body>
-<div id='login-box'>
-  <h2>Portal Kuota Terbatas</h2>
-  <p style='color:#666; font-size:13px; margin-bottom:20px; text-align: justify;'>
-    <b>PERINGATAN AKSES:</b> Sekali Anda sukses memasukkan ID & PIN, sistem akan memberikan waktu baca selama <b>1 Jam saja</b>. Setelah 1 jam habis, Anda akan langsung di-<b>BLOCK total selama 1 minggu (7 hari)</b> ke depan.
-  </p>
-  <input type='text' id='username-input' placeholder='Username Instagram Anda...'>
-  <input type='password' id='pin-input' placeholder='Masukkan 6 Digit PIN (MMYYYY)...'>
-  <button onclick='cekAkses()'>Masuk Sistem</button>
-  <div id='error-msg' class='error'></div>
+
+<div class="container">
+    <div id="login-box" style="display: block;">
+        <h2>Portal Checker Eksklusif</h2>
+        <div class="info-box">Masukkan ID Instagram kamu & PIN khusus dari admin untuk menggunakan alat kurasi ini.</div>
+        <div class="form-group">
+            <label>ID Instagram Anda</label>
+            <input type="text" id="username-input" placeholder="Contoh: jaafarjackson">
+        </div>
+        <div class="form-group">
+            <label>PIN Akses</label>
+            <input type="password" id="pin-input" placeholder="Masukkan PIN Rahasia...">
+        </div>
+        <button onclick="prosesLogin()">Masuk ke Alat</button>
+        <div id="login-error" class="error"></div>
+    </div>
+
+    <div id="upload-box">
+        <h2>Upload Data Instagram Anda</h2>
+        <p>Silakan masukkan file data mentah JSON hasil unduhan dari akun Instagram Anda sendiri.</p>
+        
+        <div class="form-group">
+            <label>1. File followers_1.json</label>
+            <input type="file" id="file-followers" accept=".json" onchange="cekFile('followers')">
+            <div id="status-followers" class="status-success"></div>
+        </div>
+        <div class="form-group">
+            <label>2. File following.json</label>
+            <input type="file" id="file-following" accept=".json" onchange="cekFile('following')">
+            <div id="status-following" class="status-success"></div>
+        </div>
+        <button onclick="analisisData()">Mulai Kurasi Akun Saya</button>
+        <div id="upload-error" class="error"></div>
+    </div>
+
+    <div id="result-box">
+        <h2>Hasil Kurasi Akun Anda</h2>
+        <p id="user-greeting" style="font-weight: bold; color: #0095f6; display: flex; align-items: center;"></p>
+        <div id="summary-text" style="margin-bottom: 15px; font-weight: bold;"></div>
+        <div id="unfollow-list-wrapper">
+            <ol id="unfollow-list"></ol>
+        </div>
+        <button onclick="window.location.reload()" style="background: #6c757d;">Keluar / Reset</button>
+    </div>
 </div>
-<div id='content' class='container'>
-  <div id='timer-info'>Sisa Waktu Sesi Anda: <span id='countdown'>60:00</span> Menit</div>
-  <h1>HASIL KURASI INSTAGRAM</h1>
-  <p style='text-align:center; color:#777;'>Dibuat pada: 2026-06-01 22:14:25</p>
-  <h2>Daftar Akun yang Tidak Follback (570 akun)</h2>
-  <ol>
-    <li>
-      <a href='https://www.instagram.com/_u/jaafarjackson' target='_blank'>@jaafarjackson</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-31 19:06:44</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/nikenays__' target='_blank'>@nikenays__</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-31 02:51:34</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/bahlillahadalia' target='_blank'>@bahlillahadalia</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-29 22:38:50</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/chiefilomeno' target='_blank'>@chiefilomeno</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-21 20:09:17</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/natalie_imbruglia' target='_blank'>@natalie_imbruglia</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-16 21:17:15</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/yerixy' target='_blank'>@yerixy</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-15 23:51:56</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/dwnti11' target='_blank'>@dwnti11</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-15 23:42:49</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/chichiverahill' target='_blank'>@chichiverahill</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-14 06:34:20</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/jeilalou' target='_blank'>@jeilalou</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-14 06:17:23</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/aslllannova' target='_blank'>@aslllannova</a>
-      <div class='meta-info'>Kamu follow pada: 2026-05-12 10:08:47</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/barcalegends' target='_blank'>@barcalegends</a>
-      <div class='meta-info'>Kamu follow pada: 2026-04-20 00:02:41</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/najlapr' target='_blank'>@najlapr</a>
-      <div class='meta-info'>Kamu follow pada: 2026-04-19 13:23:29</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/sha.thv' target='_blank'>@sha.thv</a>
-      <div class='meta-info'>Kamu follow pada: 2026-04-17 23:01:59</div>
-    </li>
-    <li>
-      <a href='https://www.instagram.com/_u/vickynit13' target='_blank'>@vickynit13</a>
-      <div class='meta-info'>Kamu follow pada: 2026-04-14 20:51:04</div>
-    </li>
-    <li>
+
+<script>
+    // --- PENGATURAN KREDENSIAL ---
+    const PIN_FOLLOW_GLOBAL = "9922"; // PIN untuk follower umum
+    const ADMIN_USER = "rahmando._";   // Username Spesial Kamu
+    const ADMIN_PIN = "669966";       // PIN Spesial Kamu
+    
+    let dataFollowers = new Set();
+    let dataFollowing = [];
+    let targetUser = "";
+    let isAdmin = false;
+
+    function prosesLogin() {
+        const userInput = document.getElementById('username-input').value.trim().toLowerCase();
+        const pinInput = document.getElementById('pin-input').value.trim();
+        const errDiv = document.getElementById('login-error');
+
+        if(!userInput || !pinInput) {
+            errDiv.innerText = "ID dan PIN wajib diisi!";
+            return;
+        }
+
+        // 1. LOGIKA UTAMA: CEK AKSES MASTER ADMIN KAMU
+        if(userInput === ADMIN_USER.toLowerCase() && pinInput === ADMIN_PIN) {
+            targetUser = userInput;
+            isAdmin = true;
+            bukaAksesAlat();
+            return;
+        }
+
+        // 2. LOGIKA KEDUA: CEK AKSES FOLLOWER BIASA
+        if(pinInput === PIN_FOLLOW_GLOBAL) {
+            targetUser = userInput;
+            isAdmin = false;
+            bukaAksesAlat();
+        } else {
+            errDiv.innerText = "PIN Akses Salah! Hanya untuk follower terverifikasi.";
+        }
+    }
+
+    function bukaAksesAlat() {
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('upload-box').style.display = 'block';
+    }
+
+    function cekFile(tipe) {
+        if(tipe === 'followers') {
+            document.getElementById('status-followers').innerText = "✓ File followers siap.";
+        } else {
+            document.getElementById('status-following').innerText = "✓ File following siap.";
+        }
+    }
+
+    function analisisData() {
+        const fileFollowers = document.getElementById('file-followers').files[0];
+        const fileFollowing = document.getElementById('file-following').files[0];
+        const uploadError = document.getElementById('upload-error');
+
+        if (!fileFollowers || !fileFollowing) {
+            uploadError.innerText = "Kedua file JSON wajib diunggah!";
+            return;
+        }
+
+        uploadError.innerText = "";
+
+        const readerFollowers = new FileReader();
+        readerFollowers.onload = function(e) {
+            try {
+                const json = JSON.parse(e.target.result);
+                const items = json.relationships_followers || json;
+                dataFollowers.clear();
+                
+                items.forEach(item => {
+                    if (item.string_list_data && item.string_list_data.length > 0) {
+                        const val = item.string_list_data[0].value;
+                        if (val) dataFollowers.add(val.toLowerCase().trim());
+                    }
+                });
+
+                const readerFollowing = new FileReader();
+                readerFollowing.onload = function(eAnak) {
+                    try {
+                        const jsonAnak = JSON.parse(eAnak.target.result);
+                        const itemsAnak = jsonAnak.relationships_following || jsonAnak;
+                        dataFollowing = [];
+
+                        itemsAnak.forEach(item => {
+                            if (item.string_list_data && item.string_list_data.length > 0) {
+                                const username = item.title || "";
+                                const href = item.string_list_data[0].href || `https://www.instagram.com/${username}`;
+                                if (username) {
+                                    dataFollowing.push({
+                                        username: username,
+                                        href: href,
+                                        key: username.toLowerCase().trim()
+                                    });
+                                }
+                            }
+                        });
+
+                        tampilkanHasil();
+
+                    } catch (err) {
+                        uploadError.innerText = "Gagal membaca format file following.json";
+                    }
+                };
+                readerFollowing.readAsText(fileFollowing);
+
+            } catch (err) {
+                uploadError.innerText = "Gagal membaca format file followers_1.json";
+            }
+        };
+        readerFollowers.readAsText(fileFollowers);
+    }
+
+    function tampilkanHasil() {
+        const listOl = document.getElementById('unfollow-list');
+        listOl.innerHTML = "";
+
+        let tidakFollback = dataFollowing.filter(user => !dataFollowers.has(user.key));
+
+        document.getElementById('upload-box').style.display = 'none';
+        document.getElementById('result-box').style.display = 'block';
+        
+        // Tampilkan nama sapaan, berikan badge hijau "ADMIN" jika kamu yang login
+        if(isAdmin) {
+            document.getElementById('user-greeting').innerHTML = `Halo @${targetUser} <span class="badge-admin">ADMIN</span>`;
+        } else {
+            document.getElementById('user-greeting').innerText = `Halo @${targetUser},`;
+        }
+        
+        document.getElementById('summary-text').innerText = `Ditemukan ${tidakFollback.length} akun yang tidak melakukan follback kepada Anda:`;
+
+        if (tidakFollback.length > 0) {
+            tidakFollback.forEach(user => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${user.href}" target="_blank">@${user.username}</a> tidak mem-follback Anda.`;
+                listOl.appendChild(li);
+            });
+        } else {
+            document.getElementById('unfollow-list-wrapper').innerHTML = "<p style='color: #198754; font-weight:bold;'>Hebat! Semua orang yang Anda ikuti sudah mem-follback Anda.</p>";
+        }
+    }
+</script>
+
+</body>
+</html>
       <a href='https://www.instagram.com/_u/gasukastobery' target='_blank'>@gasukastobery</a>
       <div class='meta-info'>Kamu follow pada: 2026-04-14 17:59:18</div>
     </li>
