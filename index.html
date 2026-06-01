@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Unfollow Checker - Portal Admin & Follower</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fafafa; color: #262626; padding: 20px; margin: 0; }
+        .container { max-width: 500px; margin: 30px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #dbdbdb; }
+        h2 { text-align: center; margin-bottom: 20px; color: #444; }
+        p { font-size: 14px; color: #666; line-height: 1.5; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
+        input[type="text"], input[type="password"], input[type="file"] { width: 100%; padding: 11px; border: 1px solid #dbdbdb; border-radius: 6px; box-sizing: border-box; font-size: 14px; background: #fafafa; }
+        button { width: 100%; padding: 12px; background: #0095f6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; }
+        button:hover { background: #1877f2; }
+        #login-box, #upload-box, #result-box { display: none; }
+        .error { color: #ed4956; font-size: 13px; margin-top: 5px; font-weight: bold; }
+        .status-success { color: #198754; font-size: 13px; font-weight: bold; margin-top: 5px; }
+        ol { padding-left: 20px; }
+        li { margin-bottom: 10px; padding: 8px; background: #f8f9fa; border-left: 4px solid #ed4956; border-radius: 4px; font-size: 14px; }
+        a { color: #00376b; text-decoration: none; font-weight: bold; }
+        .info-box { background: #e8f0fe; padding: 12px; border-radius: 6px; font-size: 13px; color: #1a73e8; margin-bottom: 20px; border-left: 4px solid #1a73e8; }
+        .badge-admin { background: #28a745; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 5px; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="login-box" style="display: block;">
+        <h2>Portal Checker Eksklusif</h2>
+        <div class="info-box">Masukkan ID Instagram kamu & PIN khusus dari admin untuk menggunakan alat kurasi ini.</div>
+        <div class="form-group">
+            <label>ID Instagram Anda</label>
+            <input type="text" id="username-input" placeholder="Contoh: jaafarjackson">
+        </div>
+        <div class="form-group">
+            <label>PIN Akses</label>
+            <input type="password" id="pin-input" placeholder="Masukkan PIN Rahasia...">
+        </div>
+        <button onclick="prosesLogin()">Masuk ke Alat</button>
+        <div id="login-error" class="error"></div>
+    </div>
+
+    <div id="upload-box">
+        <h2>Upload Data Instagram Anda</h2>
+        <p>Silakan masukkan file data mentah JSON hasil unduhan dari akun Instagram Anda sendiri.</p>
+        
+        <div class="form-group">
+            <label>1. File followers_1.json</label>
+            <input type="file" id="file-followers" accept=".json" onchange="cekFile('followers')">
+            <div id="status-followers" class="status-success"></div>
+        </div>
+        <div class="form-group">
+            <label>2. File following.json</label>
+            <input type="file" id="file-following" accept=".json" onchange="cekFile('following')">
+            <div id="status-following" class="status-success"></div>
+        </div>
+        <button onclick="analisisData()">Mulai Kurasi Akun Saya</button>
+        <div id="upload-error" class="error"></div>
+    </div>
+
+    <div id="result-box">
+        <h2>Hasil Kurasi Akun Anda</h2>
+        <p id="user-greeting" style="font-weight: bold; color: #0095f6; display: flex; align-items: center;"></p>
+        <div id="summary-text" style="margin-bottom: 15px; font-weight: bold;"></div>
+        <div id="unfollow-list-wrapper">
+            <ol id="unfollow-list"></ol>
+        </div>
+        <button onclick="window.location.reload()" style="background: #6c757d;">Keluar / Reset</button>
+    </div>
+</div>
+
+<script>
+    // --- PENGATURAN KREDENSIAL ---
+    const PIN_FOLLOW_GLOBAL = "9922"; // PIN untuk follower umum
+    const ADMIN_USER = "rahmando._";   // Username Spesial Kamu
+    const ADMIN_PIN = "669966";       // PIN Spesial Kamu
+    
+    let dataFollowers = new Set();
+    let dataFollowing = [];
+    let targetUser = "";
+    let isAdmin = false;
+
+    function prosesLogin() {
+        const userInput = document.getElementById('username-input').value.trim().toLowerCase();
+        const pinInput = document.getElementById('pin-input').value.trim();
+        const errDiv = document.getElementById('login-error');
+
+        if(!userInput || !pinInput) {
+            errDiv.innerText = "ID dan PIN wajib diisi!";
+            return;
+        }
+
+        // 1. LOGIKA UTAMA: CEK AKSES MASTER ADMIN KAMU
+        if(userInput === ADMIN_USER.toLowerCase() && pinInput === ADMIN_PIN) {
+            targetUser = userInput;
+            isAdmin = true;
+            bukaAksesAlat();
+            return;
+        }
+
+        // 2. LOGIKA KEDUA: CEK AKSES FOLLOWER BIASA
+        if(pinInput === PIN_FOLLOW_GLOBAL) {
+            targetUser = userInput;
+            isAdmin = false;
+            bukaAksesAlat();
+        } else {
+            errDiv.innerText = "PIN Akses Salah! Hanya untuk follower terverifikasi.";
+        }
+    }
+
+    function bukaAksesAlat() {
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('upload-box').style.display = 'block';
+    }
+
+    function cekFile(tipe) {
+        if(tipe === 'followers') {
+            document.getElementById('status-followers').innerText = "✓ File followers siap.";
+        } else {
+            document.getElementById('status-following').innerText = "✓ File following siap.";
+        }
+    }
+
+    function analisisData() {
+        const fileFollowers = document.getElementById('file-followers').files[0];
+        const fileFollowing = document.getElementById('file-following').files[0];
+        const uploadError = document.getElementById('upload-error');
+
+        if (!fileFollowers || !fileFollowing) {
+            uploadError.innerText = "Kedua file JSON wajib diunggah!";
+            return;
+        }
+
+        uploadError.innerText = "";
+
+        const readerFollowers = new FileReader();
+        readerFollowers.onload = function(e) {
+            try {
+                const json = JSON.parse(e.target.result);
+                const items = json.relationships_followers || json;
+                dataFollowers.clear();
+                
+                items.forEach(item => {
+                    if (item.string_list_data && item.string_list_data.length > 0) {
+                        const val = item.string_list_data[0].value;
+                        if (val) dataFollowers.add(val.toLowerCase().trim());
+                    }
+                });
+
+                const readerFollowing = new FileReader();
+                readerFollowing.onload = function(eAnak) {
+                    try {
+                        const jsonAnak = JSON.parse(eAnak.target.result);
+                        const itemsAnak = jsonAnak.relationships_following || jsonAnak;
+                        dataFollowing = [];
+
+                        itemsAnak.forEach(item => {
+                            if (item.string_list_data && item.string_list_data.length > 0) {
+                                const username = item.title || "";
+                                const href = item.string_list_data[0].href || `https://www.instagram.com/${username}`;
+                                if (username) {
+                                    dataFollowing.push({
+                                        username: username,
+                                        href: href,
+                                        key: username.toLowerCase().trim()
+                                    });
+                                }
+                            }
+                        });
+
+                        tampilkanHasil();
+
+                    } catch (err) {
+                        uploadError.innerText = "Gagal membaca format file following.json";
+                    }
+                };
+                readerFollowing.readAsText(fileFollowing);
+
+            } catch (err) {
+                uploadError.innerText = "Gagal membaca format file followers_1.json";
+            }
+        };
+        readerFollowers.readAsText(fileFollowers);
+    }
+
+    function tampilkanHasil() {
+        const listOl = document.getElementById('unfollow-list');
+        listOl.innerHTML = "";
+
+        let tidakFollback = dataFollowing.filter(user => !dataFollowers.has(user.key));
+
+        document.getElementById('upload-box').style.display = 'none';
+        document.getElementById('result-box').style.display = 'block';
+        
+        // Tampilkan nama sapaan, berikan badge hijau "ADMIN" jika kamu yang login
+        if(isAdmin) {
+            document.getElementById('user-greeting').innerHTML = `Halo @${targetUser} <span class="badge-admin">ADMIN</span>`;
+        } else {
+            document.getElementById('user-greeting').innerText = `Halo @${targetUser},`;
+        }
+        
+        document.getElementById('summary-text').innerText = `Ditemukan ${tidakFollback.length} akun yang tidak melakukan follback kepada Anda:`;
+
+        if (tidakFollback.length > 0) {
+            tidakFollback.forEach(user => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${user.href}" target="_blank">@${user.username}</a> tidak mem-follback Anda.`;
+                listOl.appendChild(li);
+            });
+        } else {
+            document.getElementById('unfollow-list-wrapper').innerHTML = "<p style='color: #198754; font-weight:bold;'>Hebat! Semua orang yang Anda ikuti sudah mem-follback Anda.</p>";
+        }
+    }
+</script>
+
+</body>
+</html>
