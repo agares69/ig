@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 # === MASUKKAN KUNCI RAHASIA SUPABASE KAMU DI SINI ===
-SUPABASE_URL = "https://gyebaszcfupgdaauobcr.supabase.co/rest/v1/"
+SUPABASE_URL = "https://gyebaszcfupgdaauobcr.supabase.co"
 SUPABASE_KEY = "sb_publishable_l1nNIGmL9qDG6lEUBiwBUA_rDqwLIIu"
 
 # Inisiasi koneksi ke Database Supabase
