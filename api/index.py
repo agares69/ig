@@ -33,12 +33,22 @@ def proses_login():
         return jsonify({"status": "sukses", "is_admin": True})
 
     try:
-        # 🔥 1. TAMBAHAN DI SINI: Mengambil IP Asli user yang lewat Vercel
+        # 1. Mengambil IP Asli user
         ip_user = request.headers.get('X-Real-IP', request.headers.get('X-Forwarded-For', request.remote_addr))
         if ip_user and ',' in ip_user:
             ip_user = ip_user.split(',')[0].strip()
 
-        # 1. CEK USER (SELECT) lewat jalur HTTP REST API
+        # 🔥 LOGIKA BARU: Cek apakah IP ini terdaftar di Blacklist
+        url_cek_blacklist = f"{SUPABASE_URL}/rest/v1/ip_blacklist?ip=eq.{ip_user}"
+        response_blacklist = requests.get(url_cek_blacklist, headers=HEADERS)
+        data_blacklist = response_blacklist.json()
+
+        if len(data_blacklist) > 0:
+            # Jika IP ditemukan di tabel blacklist, LANGSUNG BLOKIR DI TEMPAT!
+            return jsonify({"status": "error", "pesan": "Akses Ditolak! Perangkat atau jaringan Anda diblokir karena tindakan kecurangan."}), 403
+
+
+        # 2. CEK USER (SELECT) lewat jalur HTTP REST API (Proses Normal)
         url_select = f"{SUPABASE_URL}/rest/v1/akun_pengguna?username=eq.{user}"
         response_select = requests.get(url_select, headers=HEADERS)
         data_db = response_select.json()
@@ -46,8 +56,6 @@ def proses_login():
         if len(data_db) == 0:
             # Skenario 1: User belum terdaftar -> SIMPAN DATA BARU (INSERT)
             url_insert = f"{SUPABASE_URL}/rest/v1/akun_pengguna"
-            
-            # 🔥 2. PERUBAHAN DI SINI: Memasukkan kolom "ip_terakhir" ke dalam payload database
             payload = {"username": user, "pin": pin, "waktu_ban": 0, "ip_terakhir": ip_user}
             requests.post(url_insert, headers=HEADERS, json=payload)
             
@@ -64,7 +72,7 @@ def proses_login():
             if user_data['waktu_ban'] > sekarang:
                 return jsonify({"status": "banned", "pesan": "Akses diblokir! Sedang dalam masa cooldown."}), 403
 
-            # 🔥 3. TAMBAHAN DI SINI: Jika login sukses, update IP terbaru mereka ke Supabase
+            # Update IP terbaru mereka jika sukses login
             url_update_ip = f"{SUPABASE_URL}/rest/v1/akun_pengguna?username=eq.{user}"
             requests.patch(url_update_ip, headers=HEADERS, json={"ip_terakhir": ip_user})
 
@@ -93,4 +101,4 @@ def kunci_akun():
 
 if __name__ == '__main__':
     app.run(debug=True)
-        
+    
