@@ -11,10 +11,8 @@ SUPABASE_URL = "https://gyebaszcfupgdaauobcr.supabase.co"
 SUPABASE_KEY = "sb_publishable_l1nNIGmL9qDG6lEUBiwBUA_rDqwLIIu"
 
 # Inisiasi koneksi ke Database Supabase
-try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-except Exception as e:
-    print("Gagal konek ke Supabase:", e)
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/api/login', methods=['POST'])
 def proses_login():
@@ -80,4 +78,3 @@ def kunci_akun():
 # Wajib untuk Vercel Serverless
 if __name__ == '__main__':
     app.run(debug=True)
-  
