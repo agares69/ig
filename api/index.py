@@ -8,7 +8,7 @@ CORS(app)
 
 # === MASUKKAN KUNCI RAHASIA SUPABASE KAMU DI SINI ===
 SUPABASE_URL = "https://gyebaszcfupgdaauobcr.supabase.co"
-SUPABASE_KEY = "sb_publishable_l1nNIGmL9qDG6lEUBiwBUA_rDqwLIIu"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5ZWJhc3pjZnVwZ2RhYXVvYmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MzEyMjcsImV4cCI6MjA5NjAwNzIyN30.hYBwSpJ4yro8BzG2GzpDIWnOoPkqWXr9xefeNUAHhz8"
 
 # Inisiasi koneksi ke Database Supabase
 
