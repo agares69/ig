@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests  # Menggunakan requests biasa, jauh lebih aman dan ringan di Vercel
+import requests  
 import time
 
 app = Flask(__name__)
@@ -10,7 +10,6 @@ CORS(app)
 SUPABASE_URL = "https://gyebaszcfupgdaauobcr.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5ZWJhc3pjZnVwZ2RhYXVvYmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MzEyMjcsImV4cCI6MjA5NjAwNzIyN30.hYBwSpJ4yro8BzG2GzpDIWnOoPkqWXr9xefeNUAHhz8"
 
-# Tanda kutip pada "application/json" sudah diperbaiki gess!
 HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -34,6 +33,11 @@ def proses_login():
         return jsonify({"status": "sukses", "is_admin": True})
 
     try:
+        # 🔥 1. TAMBAHAN DI SINI: Mengambil IP Asli user yang lewat Vercel
+        ip_user = request.headers.get('X-Real-IP', request.headers.get('X-Forwarded-For', request.remote_addr))
+        if ip_user and ',' in ip_user:
+            ip_user = ip_user.split(',')[0].strip()
+
         # 1. CEK USER (SELECT) lewat jalur HTTP REST API
         url_select = f"{SUPABASE_URL}/rest/v1/akun_pengguna?username=eq.{user}"
         response_select = requests.get(url_select, headers=HEADERS)
@@ -42,7 +46,9 @@ def proses_login():
         if len(data_db) == 0:
             # Skenario 1: User belum terdaftar -> SIMPAN DATA BARU (INSERT)
             url_insert = f"{SUPABASE_URL}/rest/v1/akun_pengguna"
-            payload = {"username": user, "pin": pin, "waktu_ban": 0}
+            
+            # 🔥 2. PERUBAHAN DI SINI: Memasukkan kolom "ip_terakhir" ke dalam payload database
+            payload = {"username": user, "pin": pin, "waktu_ban": 0, "ip_terakhir": ip_user}
             requests.post(url_insert, headers=HEADERS, json=payload)
             
             return jsonify({"status": "sukses", "pesan": "PIN baru berhasil dikunci permanen!", "is_admin": False})
@@ -57,6 +63,10 @@ def proses_login():
             sekarang = int(time.time() * 1000)
             if user_data['waktu_ban'] > sekarang:
                 return jsonify({"status": "banned", "pesan": "Akses diblokir! Sedang dalam masa cooldown."}), 403
+
+            # 🔥 3. TAMBAHAN DI SINI: Jika login sukses, update IP terbaru mereka ke Supabase
+            url_update_ip = f"{SUPABASE_URL}/rest/v1/akun_pengguna?username=eq.{user}"
+            requests.patch(url_update_ip, headers=HEADERS, json={"ip_terakhir": ip_user})
 
             return jsonify({"status": "sukses", "pesan": "Login berhasil", "is_admin": False})
 
@@ -83,4 +93,4 @@ def kunci_akun():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
+        
