@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import requests  # Menggunakan requests biasa, jauh lebih aman di Vercel
+import requests  # Menggunakan requests biasa, jauh lebih aman dan ringan di Vercel
 import time
 
 app = Flask(__name__)
@@ -10,17 +10,20 @@ CORS(app)
 SUPABASE_URL = "https://gyebaszcfupgdaauobcr.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5ZWJhc3pjZnVwZ2RhYXVvYmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MzEyMjcsImV4cCI6MjA5NjAwNzIyN30.hYBwSpJ4yro8BzG2GzpDIWnOoPkqWXr9xefeNUAHhz8"
 
-# Header wajib untuk nembak langsung ke Supabase
+# Tanda kutip pada "application/json" sudah diperbaiki gess!
 HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": application/json",
+    "Content-Type": "application/json",
     "Prefer": "return=representation"
 }
 
 @app.route('/api/login', methods=['POST'])
 def proses_login():
     data = request.json
+    if not data:
+        return jsonify({"status": "error", "pesan": "Data tidak dikirim oleh frontend!"}), 400
+
     user = data.get('username', '').lower().strip()
     pin = data.get('pin', '').strip()
 
@@ -64,6 +67,9 @@ def proses_login():
 @app.route('/api/kunci_akun', methods=['POST'])
 def kunci_akun():
     data = request.json
+    if not data:
+        return jsonify({"status": "error"}), 400
+        
     user = data.get('username', '').lower().strip()
     waktu_ban = data.get('waktu_ban', 0)
 
