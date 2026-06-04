@@ -127,5 +127,28 @@ def kunci_akun():
     except Exception as e:
         return jsonify({"status": "error", "pesan": str(e)}), 500
 
+@app.route('/api/cek_status_terbaru', methods=['POST'])
+def cek_status_terbaru():
+    data = request.json
+    if not data:
+        return jsonify({"waktu_kurasi": 0, "waktu_ban": 0})
+        
+    user = data.get('username', '').lower().strip()
+    
+    try:
+        url_select = f"{SUPABASE_URL}/rest/v1/akun_pengguna?username=eq.{user}"
+        response_select = requests.get(url_select, headers=HEADERS)
+        data_db = response_select.json()
+        
+        if len(data_db) > 0:
+            user_data = data_db[0]
+            return jsonify({
+                "waktu_kurasi": user_data.get('waktu_kurasi', 0),
+                "waktu_ban": user_data.get('waktu_ban', 0)
+            })
+    except Exception as e:
+        pass
+        
+    return jsonify({"waktu_kurasi": 0, "waktu_ban": 0})
 if __name__ == '__main__':
     app.run(debug=True)
