@@ -46,7 +46,24 @@ def proses_login():
         if len(data_blacklist) > 0:
             return jsonify({"status": "error", "pesan": "Akses Ditolak! Perangkat atau jaringan Anda diblokir karena tindakan kecurangan."}), 403
 
-        # 3. Cek User di database akun_pengguna
+        # 🔥 3. LOGIKA BARU: CEK KEPEMILIKAN IP (1 PERANGKAT = 1 AKUN)
+        # Kita cari di database, apakah IP ini sudah pernah dipakai oleh akun yang terdaftar
+        url_cek_ip = f"{SUPABASE_URL}/rest/v1/akun_pengguna?ip_terakhir=eq.{ip_user}"
+        response_ip = requests.get(url_cek_ip, headers=HEADERS).json()
+
+        # Jika IP ini sudah ada di database...
+        if len(response_ip) > 0:
+            # Kumpulkan semua username yang pernah terdaftar pakai IP ini
+            pemilik_ip = [row.get('username', '') for row in response_ip]
+            
+            # Jika user yang mau login SEKARANG ternyata bukan pemilik asli IP tersebut -> TOLAK!
+            if user not in pemilik_ip:
+                return jsonify({
+                    "status": "error", 
+                    "pesan": "Akses Ditolak! Perangkat dengan IP ini sudah terpakai oleh akun lain. Anda tidak bisa menggunakan multi-akun."
+                }), 403
+
+        # 4. Cek User di database akun_pengguna
         url_select = f"{SUPABASE_URL}/rest/v1/akun_pengguna?username=eq.{user}"
         response_select = requests.get(url_select, headers=HEADERS)
         data_db = response_select.json()
@@ -150,5 +167,6 @@ def cek_status_terbaru():
         pass
         
     return jsonify({"waktu_kurasi": 0, "waktu_ban": 0})
+
 if __name__ == '__main__':
     app.run(debug=True)
